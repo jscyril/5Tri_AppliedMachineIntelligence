@@ -1,0 +1,84 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Text Latent Representation</title>
+<style>
+@page { size: Letter; margin: 0.65in; }
+body { font-family: Arial, sans-serif; color:#222; font-size:10.5pt; line-height:1.35; }
+h1 { font-size:16pt; color:#000; margin-top:20px; margin-bottom:7px; }
+h2 { font-size:12.5pt; color:#000; margin-top:14px; margin-bottom:5px; }
+.title { font-size:24pt; font-weight:700; line-height:1.1; margin-bottom:5px; }
+.subtitle { font-size:12pt; color:#1f4e79; margin-bottom:18px; }
+p { margin: 0 0 7px 0; }
+ul { margin-top:3px; margin-bottom:8px; }
+table { border-collapse:collapse; width:100%; margin:8px 0 14px 0; }
+th, td { border:1px solid #d9d9d9; padding:5px 7px; vertical-align:middle; }
+th { background:#1f4e79; color:white; text-align:center; }
+tr:nth-child(even) td { background:#f3f6f9; }
+.center { text-align:center; }
+pre { font-family:"Courier New", monospace; font-size:8pt; background:#f7f8fa; border-left:3px solid #1f4e79; padding:6px 10px; margin:3px 0 7px 12px; white-space:pre-wrap; }
+.label { font-weight:bold; font-size:9.5pt; margin-top:7px; margin-bottom:1px; }
+.figure { text-align:center; margin-top:10px; }
+.figure img { width:6.4in; max-width:100%; }
+.caption { text-align:center; font-style:italic; font-size:9pt; }
+</style></head><body>
+<div class="title">Text Latent Representation Using Tokenization and Word Embeddings</div>
+<div class="subtitle">Customer review dataset laboratory report</div>
+<p>This report transforms five customer reviews into numerical representations. It shows the complete path from cleaned text to token IDs, padded sequences, four-dimensional word embeddings, flattened sentence vectors, and a two-dimensional PCA visualization.</p>
+
+<h1>1 Dataset and preprocessing</h1>
+<p>The text is converted to lowercase and punctuation is removed. The resulting word tokens are kept in their original sentence order. Padding uses token ID 0, which is reserved for the padding symbol.</p>
+<ul><li>The product quality is excellent</li><li>I really love this product</li><li>The quality of this item is amazing</li><li>The product performance is poor</li><li>I dislike this product completely</li></ul>
+
+<h1>2 Vocabulary and token IDs</h1>
+<p>The vocabulary is created by assigning IDs in first-appearance order. Token ID 0 is reserved for padding.</p>
+<table><tr><th>Word</th><th>Token ID</th><th>Word</th><th>Token ID</th></tr><tr><td>the</td><td class="center">1</td><td>product</td><td class="center">2</td></tr><tr><td>quality</td><td class="center">3</td><td>is</td><td class="center">4</td></tr><tr><td>excellent</td><td class="center">5</td><td>i</td><td class="center">6</td></tr><tr><td>really</td><td class="center">7</td><td>love</td><td class="center">8</td></tr><tr><td>this</td><td class="center">9</td><td>of</td><td class="center">10</td></tr><tr><td>item</td><td class="center">11</td><td>amazing</td><td class="center">12</td></tr><tr><td>performance</td><td class="center">13</td><td>poor</td><td class="center">14</td></tr><tr><td>dislike</td><td class="center">15</td><td>completely</td><td class="center">16</td></tr></table>
+
+<h1>3 Token sequences and padding</h1>
+<p>All sequences are padded to the maximum sentence length of 7 tokens.</p>
+<table><tr><th>Sample</th><th>Token sequence</th><th>Padded sequence</th></tr><tr><td class="center">1</td><td>[1, 2, 3, 4, 5]</td><td>[1, 2, 3, 4, 5, 0, 0]</td></tr><tr><td class="center">2</td><td>[6, 7, 8, 9, 2]</td><td>[6, 7, 8, 9, 2, 0, 0]</td></tr><tr><td class="center">3</td><td>[1, 3, 10, 9, 11, 4, 12]</td><td>[1, 3, 10, 9, 11, 4, 12]</td></tr><tr><td class="center">4</td><td>[1, 2, 13, 4, 14]</td><td>[1, 2, 13, 4, 14, 0, 0]</td></tr><tr><td class="center">5</td><td>[6, 15, 9, 2, 16]</td><td>[6, 15, 9, 2, 16, 0, 0]</td></tr></table>
+
+<h1>4 Word embedding representation</h1>
+<p>For demonstration, each non-padding token is mapped to a reproducible four-dimensional dense vector generated with a fixed random seed. These vectors illustrate the representation format; they are not pretrained semantic embeddings. Padding is represented by [0.000, 0.000, 0.000, 0.000].</p>
+<h2>Embedding matrix for each sentence</h2>
+<p class="label">Sample 1: The product quality is excellent</p><pre>[0.001, 0.299, -0.274, -0.891]
+[-0.455, -0.992, 0.060, 1.340]
+[-0.492, -0.620, 0.490, 0.357]
+[0.105, -0.930, -0.029, 0.695]
+[-1.344, -0.458, -1.901, -1.290]
+[0.000, 0.000, 0.000, 0.000]
+[0.000, 0.000, 0.000, 0.000]</pre><p class="label">Sample 2: I really love this product</p><pre>[-1.842, -0.235, -1.267, 0.271]
+[0.157, -0.187, -2.517, -0.539]
+[-0.049, 0.113, -1.530, -0.478]
+[-0.979, -0.809, 1.061, -0.808]
+[-0.455, -0.992, 0.060, 1.340]
+[0.000, 0.000, 0.000, 0.000]
+[0.000, 0.000, 0.000, 0.000]</pre><p class="label">Sample 3: The quality of this item is amazing</p><pre>[0.001, 0.299, -0.274, -0.891]
+[-0.492, -0.620, 0.490, 0.357]
+[-0.033, 0.884, -0.584, -0.112]
+[-0.979, -0.809, 1.061, -0.808]
+[0.110, 0.064, -1.225, 0.076]
+[0.105, -0.930, -0.029, 0.695]
+[1.359, -1.547, 0.859, 0.119]</pre><p class="label">Sample 4: The product performance is poor</p><pre>[0.001, 0.299, -0.274, -0.891]
+[-0.455, -0.992, 0.060, 1.340]
+[-0.641, 2.000, 0.762, -1.199]
+[0.105, -0.930, -0.029, 0.695]
+[0.075, 0.577, -0.189, 0.683]
+[0.000, 0.000, 0.000, 0.000]
+[0.000, 0.000, 0.000, 0.000]</pre><p class="label">Sample 5: I dislike this product completely</p><pre>[-1.842, -0.235, -1.267, 0.271]
+[-0.067, 0.667, 1.439, -0.676]
+[-0.979, -0.809, 1.061, -0.808]
+[-0.455, -0.992, 0.060, 1.340]
+[0.203, -0.463, 0.127, -1.187]
+[0.000, 0.000, 0.000, 0.000]
+[0.000, 0.000, 0.000, 0.000]</pre>
+
+<h1>5 Flattened vector representations</h1>
+<p>Each 7 × 4 embedding matrix is flattened row by row into a single vector of length 28.</p>
+<pre>Sample 1: [0.001, 0.299, -0.274, -0.891, -0.455, -0.992, 0.060, 1.340, -0.492, -0.620, 0.490, 0.357, 0.105, -0.930, -0.029, 0.695, -1.344, -0.458, -1.901, -1.290, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000]</pre><pre>Sample 2: [-1.842, -0.235, -1.267, 0.271, 0.157, -0.187, -2.517, -0.539, -0.049, 0.113, -1.530, -0.478, -0.979, -0.809, 1.061, -0.808, -0.455, -0.992, 0.060, 1.340, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000]</pre><pre>Sample 3: [0.001, 0.299, -0.274, -0.891, -0.492, -0.620, 0.490, 0.357, -0.033, 0.884, -0.584, -0.112, -0.979, -0.809, 1.061, -0.808, 0.110, 0.064, -1.225, 0.076, 0.105, -0.930, -0.029, 0.695, 1.359, -1.547, 0.859, 0.119]</pre><pre>Sample 4: [0.001, 0.299, -0.274, -0.891, -0.455, -0.992, 0.060, 1.340, -0.641, 2.000, 0.762, -1.199, 0.105, -0.930, -0.029, 0.695, 0.075, 0.577, -0.189, 0.683, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000]</pre><pre>Sample 5: [-1.842, -0.235, -1.267, 0.271, -0.067, 0.667, 1.439, -0.676, -0.979, -0.809, 1.061, -0.808, -0.455, -0.992, 0.060, 1.340, 0.203, -0.463, 0.127, -1.187, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000, 0.000]</pre>
+
+<h1>6 PCA visualization</h1>
+<p>PCA reduces the four-dimensional word vectors to two principal components. Words that appear near one another in the plot have similar coordinates under this illustrative embedding assignment. With a real pretrained embedding model, relative positions would be learned from language data and would carry stronger semantic meaning.</p>
+<div class="figure"><img src="pca_embeddings.png"><div class="caption">Figure 1. Two-dimensional PCA projection of the word embeddings.</div></div>
+
+<h1>7 Analysis and conclusion</h1>
+<p>Tokenization converts the reviews into discrete IDs, while padding makes every sample compatible with a single rectangular tensor. The embedding layer changes each ID into a dense vector, preserving a fixed four-value representation per token. Flattening then produces a fixed-length sentence vector with 28 values. The PCA plot provides a compact visual summary of the embedding space, but the positions should be interpreted as illustrative because the vectors were generated randomly rather than trained on a large corpus.</p>
+</body></html>

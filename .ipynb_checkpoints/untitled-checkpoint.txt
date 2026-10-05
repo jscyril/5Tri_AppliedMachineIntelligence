@@ -1,0 +1,163 @@
+## 2. CNN
+
+Source: CNN_CIA_Test_1_RegNo_last3digits.ipynb
+
+### Errors
+
+TensorFlow is imported without the alias tf.
+The image lacks a batch dimension.
+The CNN input shape lacks the channel dimension.
+Flatten is missing parentheses and a comma.
+The second convolution is selected instead of the first convolution for visualization.
+
+### Corrections
+
+import tensorflow as tf
+
+image = image.reshape(1, 28, 28, 1)
+
+input_shape=(28, 28, 1)
+
+tf.keras.layers.Flatten(),
+
+The model section should contain:
+
+model = tf.keras.Sequential([
+    tf.keras.layers.Conv2D(
+        filters=32,
+        kernel_size=(5, 5),
+        activation="sigmoid",
+        input_shape=(28, 28, 1)
+    ),
+
+    tf.keras.layers.MaxPooling2D(
+        pool_size=(3, 3),
+        strides=(3, 3)
+    ),
+
+    tf.keras.layers.Conv2D(
+        filters=8,
+        kernel_size=(3, 3),
+        activation="sigmoid"
+    ),
+
+    tf.keras.layers.MaxPooling2D(
+        pool_size=(2, 2)
+    ),
+
+    tf.keras.layers.Flatten(),
+
+    tf.keras.layers.Dense(
+        32,
+        activation="sigmoid"
+    )
+])
+
+For the first convolution feature map:
+
+feature_model = tf.keras.Model(
+    inputs=model.input,
+    outputs=model.layers[0].output
+)
+
+Expected shapes:
+
+Input shape:                         (1, 28, 28, 1)
+Final representation shape:          (1, 32)
+First convolution output shape:      (1, 24, 24, 32)
+
+## 3. LeNet-5
+
+Source: LeNet5_CIA_Test_1_RegNo_last3digits.ipynb
+
+### Errors
+
+TensorFlow is imported without the alias tf.
+The image is multiplied by 255 even though it already contains values 0 and 255.
+The image lacks a batch dimension.
+The first pooling layer uses (3, 3), which makes the later 5 × 5 convolution impossible.
+Several commas and parentheses are missing.
+The output layer has one unit, making argmax meaningless for digit classification.
+The feature extractor selects C3 while being named and displayed as C1.
+
+### Corrections
+
+import tensorflow as tf
+
+Normalize correctly:
+
+image = image / 255.0
+
+Add batch and channel dimensions:
+
+image = image.reshape(1, 32, 32, 1)
+
+Use a 2 × 2 pooling window:
+
+x = tf.keras.layers.AveragePooling2D(
+    pool_size=(2, 2),
+    name="S2"
+)(x)
+
+Correct model code:
+
+inputs = tf.keras.Input(shape=(32, 32, 1))
+
+x = tf.keras.layers.Conv2D(
+    6, kernel_size=(5, 5),
+    activation="relu",
+    name="C1"
+)(inputs)
+
+x = tf.keras.layers.AveragePooling2D(
+    pool_size=(2, 2),
+    name="S2"
+)(x)
+
+x = tf.keras.layers.Conv2D(
+    8,
+    kernel_size=(3, 3),
+    activation="tanh",
+    name="C3"
+)(x)
+
+x = tf.keras.layers.AveragePooling2D(
+    pool_size=(2, 2),
+    name="S4"
+)(x)
+
+x = tf.keras.layers.Conv2D(
+    120,
+    kernel_size=(5, 5),
+    activation="tanh",
+    name="C5"
+)(x)
+
+x = tf.keras.layers.Flatten(name="Flatten")(x)
+
+features = tf.keras.layers.Dense(
+    84,
+    activation="tanh",
+    name="F6"
+)(x)
+
+outputs = tf.keras.layers.Dense(
+    10,
+    activation="softmax",
+    name="Output"
+)(features)
+
+model = tf.keras.Model(inputs=inputs, outputs=outputs)
+
+Correct feature extraction:
+
+c1_model = tf.keras.Model(
+    inputs=model.input,
+    outputs=model.get_layer("C1").output
+)
+
+Expected shapes:
+
+CNN input shape:       (1, 32, 32, 1)
+Output shape:          (1, 10)
+C1 feature map shape:  (1, 28, 28, 6)
